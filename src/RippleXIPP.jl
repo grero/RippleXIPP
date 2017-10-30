@@ -97,5 +97,28 @@ function XippPacket(bytes::Array{UInt8})
     XippPacket(header, payload)
 end
 
-end #module
+function process_packets(socket::UDPSocket)
+    packets = XippPacket[]
+    process_packets!(packets, socket)
+    packets
+end
 
+function process_packets!(packets::Array{XippPacket,1}, socket::UDPSocket)
+    stop = false
+    while !stop
+        bytes = recv(socket)
+        n = length(bytes)
+        i = 1
+        while i <= n
+            packet = XippPacket(bytes[i:end])
+            if packet.header.processor == 0
+                stop = true
+                break
+            end
+            push!(packets, packet)
+            i += size(packet)
+        end
+    end
+end
+
+end #module
