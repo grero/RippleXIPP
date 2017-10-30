@@ -1,6 +1,6 @@
 module RippleXIPP
 using StaticArrays
-import Base.size, Base.sizeof, Base.zero
+import Base.size, Base.sizeof, Base.zero, Base.==
 
 immutable XippHeader
   _size::UInt8
@@ -22,6 +22,10 @@ immutable XippPacket
   header::XippHeader
   payload::Array{UInt8,1}
 end
+
+Base.size(packet::XippPacket) = sizeof(packet.header) + length(packet.payload)
+
+==(p1::XippPacket, p2::XippPacket) = ((p1.header == p2.header) && (p1.payload == p2.payload))
 
 immutable XippTarget
   processor::UInt8
