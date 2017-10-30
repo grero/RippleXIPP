@@ -58,6 +58,13 @@ immutable XippContinuousDataPacket
   i16::Array{Int16,1}
 end
 
+function XippContinuousDataPacket(packet::XippDataPacket)
+    pp = pointer(packet.data[1:2])
+    padding = unsafe_load(convert(Ptr{UInt16}, pp))
+    XippContinuousDataPacket(packet.header, packet.stream_type,
+                             padding, reinterpret(Int16, packet.data[3:end]))
+end
+
 immutable XippSegmentDataPacket
   header::XippHeader
   stream_type::UInt16
