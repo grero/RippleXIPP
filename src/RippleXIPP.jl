@@ -82,10 +82,10 @@ immutable XippBool
   _def::UInt8
 end
 
-function create_receiving_socket(address,port)
+function create_receiving_socket(address::IPAddr, port::Int64)
     udpsocket = UDPSocket()
-    bind(udpsocet, address, port)
-    updsocket
+    bind(udpsocket, address, port)
+    udpsocket
 end
 
 function XippPacket(bytes::Array{UInt8})
