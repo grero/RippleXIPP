@@ -1,6 +1,6 @@
 module RippleXIPP
-using FixedSizeArrays
-import Base.size
+using StaticArrays
+import Base.size, Base.sizeof, Base.zero
 
 immutable XippHeader
   _size::UInt8
@@ -10,7 +10,13 @@ immutable XippHeader
   _time::UInt32
 end
 
-Base.size(X::XIPPHeader) = X._size
+Base.zero(::Type{XippHeader}) = XippHeader(UInt8(0), UInt8(0), UInt8(0), UInt8(0), UInt32(0))
+
+function Base.sizeof(::Type{XippHeader})
+    sizeof(UInt8)*4 + sizeof(UInt32)
+end
+
+Base.size(X::XippHeader) = X._size
 
 immutable XippPacket
   header::XippHeader
@@ -57,7 +63,7 @@ immutable XippLegacyDigitialDataPacket
   count::UInt16
   change_flag::UInt16
   parallel::UInt16
-  event::Vec{4,UInt16}
+  event::SVector{4,UInt16}
 end
 
 immutable XippPropertyHeader
@@ -72,6 +78,20 @@ immutable XippBool
   _def::UInt8
 end
 
+function create_receiving_socket(address,port)
+    udpsocket = UDPSocket()
+    bind(udpsocet, address, port)
+    updsocket
+end
+
+function XippPacket(bytes::Array{UInt8})
+    #first load the header
+    p = pointer(bytes)
+    header = unsafe_load(convert(Ptr{XippHeader}, p))
+    #figure out the length of the packet by subtracting our the header
+    payload = bytes[sizeof(XippHeader)+1:end]
+    XippPacket(header, payload)
+end
 
 end #module
 
