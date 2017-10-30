@@ -45,6 +45,12 @@ immutable XippDataPacket
   data::Array{UInt8,1}
 end
 
+function XippDataPacket(packet::XippPacket)
+    pp = pointer(packet.payload[1:2])
+    stream_type = unsafe_load(convert(Ptr{UInt16}, pp))
+    XippDataPacket(packet.header, stream_type, packet.payload[3:end])
+end
+
 immutable XippContinuousDataPacket
   header::XippHeader
   stream_type::UInt16

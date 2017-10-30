@@ -11,6 +11,19 @@ packet = RippleXIPP.XippPacket(bytes)
 @test packet.header.processor == 1
 @test packet.payload == [UInt8(1), UInt8(3), UInt8(6)]
 
+#test conversion to data packet
+bytes = zeros(UInt8, sizeof(RippleXIPP.XippHeader))
+append!(bytes, [UInt8(2), UInt8(0), UInt8(6)])
+ppacket = RippleXIPP.XippPacket(bytes)
+data_packet = RippleXIPP.XippDataPacket(ppacket)
+@test data_packet.header == ppacket.header
+@test data_packet.stream_type == 0x0002
+
+bytes = zeros(UInt8, sizeof(RippleXIPP.XippHeader))
+append!(bytes, [UInt8(1), UInt8(3), UInt8(6)])
+bytes[2] = UInt8(1)
+packet = RippleXIPP.XippPacket(bytes)
+
 #test socket
 socket = RippleXIPP.create_receiving_socket(ip"127.0.0.1",2000)
 packets = RippleXIPP.XippPacket[]
