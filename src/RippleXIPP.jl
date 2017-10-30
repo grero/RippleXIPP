@@ -1,6 +1,9 @@
 module RippleXIPP
 using StaticArrays
-import Base.size, Base.sizeof, Base.zero, Base.==
+import Base.size, Base.sizeof, Base.zero, Base.==, Base.rand, Base.convert
+
+const XIPP_STREAM_CONTINUOUS = UInt16(0x01)
+const XIPP_STREAM_SEGMENT = UInt16(0x02)
 
 immutable XippHeader
   _size::UInt8
@@ -62,7 +65,40 @@ function XippContinuousDataPacket(packet::XippDataPacket)
     pp = pointer(packet.data[1:2])
     padding = unsafe_load(convert(Ptr{UInt16}, pp))
     XippContinuousDataPacket(packet.header, packet.stream_type,
-                             padding, reinterpret(Int16, packet.data[3:end]))
+                             padding, reinterpret(Int16, packet.data[3:end-padding*2]))
+end
+
+#Wrap data in a packet
+function XippContinuousDataPacket(data::Array{Int16,1},t::UInt32)
+    n = length(data)
+    #find the size in units of 32 bits; pad if necessary
+    if mod(n,2) == 1
+        _pad = 1
+        _size = div(n,2)+1
+    else
+        _pad = 0 
+        _size = div(n,2)
+    end
+    _size += 1 # payload contains extra 32 bits for stream type and _pad value
+    processor = 1 
+    _module = 1
+    _stream = 1
+    _stream_type = XIPP_STREAM_CONTINUOUS
+    header = XippHeader(_size, processor, _module, _stream, t)
+    XippContinuousDataPacket(header, _stream_type, _pad, data)
+end
+
+function convert(::Type{Array{UInt8,1}}, packet::XippContinuousDataPacket)
+    x = Array{UInt8}(sizeof(packet.header) + 4*packet.header._size)
+    x[1] = packet.header._size
+    x[2] = packet.header.processor
+    x[3] = packet.header._module
+    x[4] = packet.header.stream
+    x[5:8] = reinterpret(UInt8, [packet.header._time])
+    x[9:10] = reinterpret(UInt8, [packet.stream_type])
+    x[11:12] = reinterpret(UInt8, [packet.PADDING])
+    x[13:end-packet.PADDING*2] = reinterpret(UInt8, packet.i16)
+    x
 end
 
 immutable XippSegmentDataPacket

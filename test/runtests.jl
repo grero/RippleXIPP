@@ -26,6 +26,15 @@ c_data_packet = RippleXIPP.XippContinuousDataPacket(data_packet)
 @test c_data_packet.PADDING == 0
 @test c_data_packet.i16 == [Int16(257)]
 
+#test encoding of continuous data packet
+data = Int16[31082, -16384, -21212, -19243, 10202, 26312, 19623, -20896, 4140]
+packet = RippleXIPP.XippContinuousDataPacket(data, UInt32(0))
+xx = convert(Array{UInt8,1}, packet)
+rpacket = RippleXIPP.XippPacket(xx)
+rdpacket = RippleXIPP.XippDataPacket(rpacket)
+rdcpacket = RippleXIPP.XippContinuousDataPacket(rdpacket)
+@test rdcpacket.i16 == packet.i16
+
 bytes = zeros(UInt8, sizeof(RippleXIPP.XippHeader))
 append!(bytes, [UInt8(1), UInt8(3), UInt8(6)])
 bytes[2] = UInt8(1)
