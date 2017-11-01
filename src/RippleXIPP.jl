@@ -160,7 +160,7 @@ function process_packets!(packets::Array{XippPacket,1}, socket::UDPSocket)
         n = length(bytes)
         i = 1
         while i <= n
-            packet = XippPacket(bytes[i:end])
+            packet = XippPacket(view(bytes,i:n))
             if packet.header.processor == 0
                 stop = true
                 break
