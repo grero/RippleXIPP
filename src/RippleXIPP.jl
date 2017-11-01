@@ -142,7 +142,8 @@ function XippPacket(bytes::Array{UInt8})
     p = pointer(bytes)
     header = unsafe_load(convert(Ptr{XippHeader}, p))
     #figure out the length of the packet by subtracting our the header
-    payload = bytes[sizeof(XippHeader)+1:end]
+    offset = sizeof(XippHeader)
+    payload = bytes[offset+1:offset+4*header._size]
     XippPacket(header, payload)
 end
 
