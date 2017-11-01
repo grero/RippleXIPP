@@ -165,6 +165,16 @@ function process_packets!(packets::Array{XippPacket,1}, socket::UDPSocket)
                 stop = true
                 break
             end
+            #check if the packet came from NIP
+            if (packet.header.processor == 1) && (packet.header._module != 0)
+                #check if it is data packet
+                if packet.header.stream != 0
+                    data_packet = XippDataPacket(packet)
+                    if data_packet.stream_type == XIPP_STREAM_CONTINUOUS
+                        c_data_packet = XippContinuousDataPacket(data_packet)
+                    end
+                end
+            end
             push!(packets, packet)
             i += size(packet)
         end
