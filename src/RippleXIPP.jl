@@ -186,5 +186,7 @@ function process_packets!(packets::Array{XippPacket,1}, socket::UDPSocket)
         end
     end
 end
+include("sampler.jl")
+include("server.jl")
 
 end #module
