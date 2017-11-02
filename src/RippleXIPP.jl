@@ -45,13 +45,16 @@ end
 immutable XippDataPacket
   header::XippHeader
   stream_type::UInt16
+  count::UInt16
   data::Array{UInt8,1}
 end
 
 function XippDataPacket(packet::XippPacket)
     pp = pointer(packet.payload[1:2])
     stream_type = unsafe_load(convert(Ptr{UInt16}, pp))
-    XippDataPacket(packet.header, stream_type, packet.payload[3:end])
+    pp = pointer(packet.payload[3:4])
+    count = unsafe_load(convert(Ptr{UInt16}, pp))
+    XippDataPacket(packet.header, stream_type, count, packet.payload[5:end])
 end
 
 immutable XippContinuousDataPacket
@@ -62,10 +65,8 @@ immutable XippContinuousDataPacket
 end
 
 function XippContinuousDataPacket(packet::XippDataPacket)
-    pp = pointer(packet.data[1:2])
-    padding = unsafe_load(convert(Ptr{UInt16}, pp))
     XippContinuousDataPacket(packet.header, packet.stream_type,
-                             padding, reinterpret(Int16, packet.data[3:end-padding*2]))
+                             UInt16(0), reinterpret(Int16, packet.data))
 end
 
 #Wrap data in a packet
