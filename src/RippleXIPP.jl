@@ -144,13 +144,13 @@ function create_receiving_socket(address::IPAddr, port::Int64)
     udpsocket
 end
 
-function XippPacket(bytes::Array{UInt8})
+function XippPacket(bytes::AbstractVector{UInt8})
     #first load the header
     p = pointer(bytes)
     header = unsafe_load(convert(Ptr{XippHeader}, p))
     #figure out the length of the packet by subtracting our the header
     offset = sizeof(XippHeader)
-    payload = bytes[offset+1:offset+4*header._size]
+    payload = bytes[offset+1:4*header._size]
     XippPacket(header, payload)
 end
 
