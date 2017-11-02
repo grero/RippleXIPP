@@ -1,6 +1,6 @@
 module RippleXIPP
 using StaticArrays
-import Base.size, Base.sizeof, Base.zero, Base.==, Base.rand, Base.convert
+import Base.size, Base.sizeof, Base.zero, Base.==, Base.rand, Base.convert, Base.unsafe_convert
 
 const XIPP_STREAM_CONTINUOUS = UInt16(0x01)
 const XIPP_STREAM_SEGMENT = UInt16(0x02)
@@ -100,6 +100,12 @@ function convert(::Type{Array{UInt8,1}}, packet::XippContinuousDataPacket)
     x[13:end-packet.PADDING*2] = reinterpret(UInt8, packet.i16)
     x
 end
+
+function unsafe_convert(::Type{Ptr{UInt8}}, packet::XippContinuousDataPacket)
+    xx = convert(Array{UInt8,1}, packet)
+    pointer(xx)
+end
+
 
 immutable XippSegmentDataPacket
   header::XippHeader
