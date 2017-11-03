@@ -65,6 +65,12 @@ end
 
 Base.size{T<:Union{XippPacket, XippDataPacket, XippContinuousDataPacket}}(packet::T) = 4*packet.header._size
 
+function Base.zero(::Type{XippContinuousDataPacket})
+    header = XippHeader(UInt8(19), UInt8(1), UInt8(1), UInt8(1), UInt32(0))
+    data = zeros(Int16,32)
+    XippContinuousDataPacket(header, XIPP_STREAM_CONTINUOUS, UInt16(0), data)
+end
+
 function XippContinuousDataPacket(packet::XippDataPacket)
     XippContinuousDataPacket(packet.header, packet.stream_type,
                              UInt16(0), reinterpret(Int16, packet.data))
