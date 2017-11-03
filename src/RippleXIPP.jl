@@ -154,11 +154,11 @@ function process_packets(socket::UDPSocket)
     packets
 end
 
-function process_packets!(packets::Array{XippContinuousDataPacket,1}, socket::UDPSocket)
+function process_packets!(packets::Array{XippPacket,1}, socket::UDPSocket)
     stop = false
     while !stop
         bytes = recv(socket)
-	process_packets!(packets, bytes)
+        process_packets!(packets, bytes)
     end
 end
 
@@ -166,23 +166,23 @@ function process_packets!(packets::Vector{XippPacket}, bytes::Vector{UInt8})
     n = length(bytes)
     i = 1
     while i <= n
-	packet = XippPacket(view(bytes,i:n))
-	#if packet.header.processor == 0
-	#    stop = true
-	#    break
-	#end
-	#check if the packet came from NIP
-	if (packet.header.processor == 1) && (packet.header._module != 0)
-	    #check if it is data packet
-	    if packet.header.stream != 0
-		data_packet = XippDataPacket(packet)
-		if data_packet.stream_type == XIPP_STREAM_CONTINUOUS
-		    c_data_packet = XippContinuousDataPacket(data_packet)
-		end
-	    end
-	end
-	push!(packets, packet)
-	i += size(packet)
+        packet = XippPacket(view(bytes,i:n))
+        #if packet.header.processor == 0
+        #    stop = true
+        #    break
+        #end
+        #check if the packet came from NIP
+        if (packet.header.processor == 1) && (packet.header._module != 0)
+            #check if it is data packet
+            if packet.header.stream != 0
+            data_packet = XippDataPacket(packet)
+            if data_packet.stream_type == XIPP_STREAM_CONTINUOUS
+                c_data_packet = XippContinuousDataPacket(data_packet)
+            end
+            end
+        end
+        push!(packets, packet)
+        i += size(packet)
     end
 end
 include("sampler.jl")
