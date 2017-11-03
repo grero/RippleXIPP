@@ -26,7 +26,6 @@ immutable XippPacket
   payload::Array{UInt8,1}
 end
 
-Base.size(packet::XippPacket) = sizeof(packet.header) + length(packet.payload)
 
 ==(p1::XippPacket, p2::XippPacket) = ((p1.header == p2.header) && (p1.payload == p2.payload))
 
@@ -63,6 +62,8 @@ immutable XippContinuousDataPacket
   PADDING::UInt16
   i16::Array{Int16,1}
 end
+
+Base.size{T<:Union{XippPacket, XippDataPacket, XippContinuousDataPacket}}(packet::T) = 4*packet.header._size
 
 function XippContinuousDataPacket(packet::XippDataPacket)
     XippContinuousDataPacket(packet.header, packet.stream_type,
