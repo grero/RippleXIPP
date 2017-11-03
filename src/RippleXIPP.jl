@@ -84,7 +84,7 @@ function XippContinuousDataPacket(data::SizedArray{Tuple{32}, Int16, 1,1},t::UIn
 end
 
 function convert(::Type{Array{UInt8,1}}, packet::XippContinuousDataPacket)
-    x = Array{UInt8}(sizeof(packet.header) + 4*packet.header._size)
+    x = Array{UInt8}(4*packet.header._size)
     x[1] = packet.header._size
     x[2] = packet.header.processor
     x[3] = packet.header._module
@@ -92,7 +92,7 @@ function convert(::Type{Array{UInt8,1}}, packet::XippContinuousDataPacket)
     x[5:8] = reinterpret(UInt8, [packet.header._time])
     x[9:10] = reinterpret(UInt8, [packet.stream_type])
     x[11:12] = reinterpret(UInt8, [packet.PADDING])
-    x[13:end-packet.PADDING*2] = reinterpret(UInt8, packet.i16)
+    x[13:end] = reinterpret(UInt8, packet.i16)
     x
 end
 
