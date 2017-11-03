@@ -3,17 +3,17 @@ Send random packets of continuous data
 """
 function serve(address::IPAddr, port::Int)
     socket = UDPSocket()
-    t0 = UInt32(0)
+    t0 = time()
     incr = UInt32(32)
     data = Size(32)(zeros(Int16, incr))
     generate_data!(data)
     while true
-        packet = RippleXIPP.XippContinuousDataPacket(data, t0)
-        t0 += incr
-	packet_data = convert(Array{UInt8,1}, packet)
+        t = round(UInt32, 1e6*(time() - t0))
+        packet = RippleXIPP.XippContinuousDataPacket(data, t)
+        packet_data = convert(Array{UInt8,1}, packet)
         send(socket, address, port, unsafe_string(pointer(packet_data), length(packet_data)))
         generate_data!(data)
-        sleep(0.01)
+        sleep(0.001)
     end
 end
 
