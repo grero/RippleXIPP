@@ -1,6 +1,6 @@
 function get_continuous_data(socket::UDPSocket, time_window::Float64)
-    t0 = 0.0
-    t1 = 0.0
+    t0 = -1.0
+    t1 = -1.0
     data = Array{Int16}(0) 
     source_module = Array{UInt8}(0)
     while (t1-t0) < time_window
@@ -14,10 +14,12 @@ function get_continuous_data(socket::UDPSocket, time_window::Float64)
                     data_packet = XippDataPacket(packet)
                     if data_packet.stream_type == XIPP_STREAM_CONTINUOUS
                         c_data_packet = XippContinuousDataPacket(data_packet)
-			t0 = t1
+                        if t0 < 0
+                            t0 = float(packet.header._time)
+                        end
                         t1 = float(packet.header._time)
                         append!(data, c_data_packet.i16)
-			append!(source_module, c_data_packet.header_module)
+                        append!(source_module, c_data_packet.header._module)
                     end
                 end
             end
