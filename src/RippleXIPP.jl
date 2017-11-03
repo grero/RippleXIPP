@@ -71,17 +71,10 @@ function XippContinuousDataPacket(packet::XippDataPacket)
 end
 
 #Wrap data in a packet
-function XippContinuousDataPacket(data::Array{Int16,1},t::UInt32)
-    n = length(data)
-    #find the size in units of 32 bits; pad if necessary
-    if mod(n,2) == 1
-        _pad = 1
-        _size = div(n,2)+1
-    else
-        _pad = 0 
-        _size = div(n,2)
-    end
-    _size += 1 # payload contains extra 32 bits for stream type and _pad value
+function XippContinuousDataPacket(data::SizedArray{Tuple{32}, Int16, 1,1},t::UInt32)
+    n = 32
+    _pad = UInt16(0)
+    _size = 2 + 1 + 16  #header size is 8 bytes, so 2 32 bit units + 4 units for the data
     processor = 1 
     _module = 1
     _stream = 1
