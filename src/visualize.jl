@@ -36,29 +36,34 @@ function show_data(ss::Signal{RippleXIPP.XippContinuousDataPacket}, channel=1, y
     w,h = res
     xmargin = 20
     ymargin = 20
-    Δx = (w-2*xmargin)/30_000
+    Δx = (w-2*xmargin)/1e6
     Δy = (h-2*ymargin)/(ymax-ymin)
+    _scale = scalematrix(Vec3f0(Δx, Δy, 1.0))
+    _offset = translationmatrix(Vec3f0(0.0, ymin, 0))
+    _margins = translationmatrix(Vec3f0(xmargin, ymargin, 0))
+    #_model = _offset*_scale*_margins
+    _model = _margins*_scale*_offset
     dt = 30
     data = [Point2f0(xmargin + i*Δx, 0.0f0) for i in 1:30_000]
     const tm = typemax(UInt32)
     t0 = tm
     tp = 1
     tick = bounce(1:10, 100)
+    k = 1
     new_data = map(ss) do _ss
         t1 = _ss.header._time
         if t0 == tm
             t0 = t1
         end
-        tt = mod(div(t1 - t0,500) + 1, 30_000)+1
+        tt = t1 - t0
         _dd = _ss.i16[channel]
-        for k in tp:tt
-            data[k] = Point2f0(xmargin + k*Δx, ymargin + (Float32(_dd) - ymin)*Δy)
-        end
+        data[k] = Point2f0(tt, _dd)
         tp = tt
+        k = mod(k, 30_000)+1
         data
     end
     plot_data = sampleon(tick, new_data)
-    _view(visualize(plot_data, :lines, color=RGBA(1.0, 0.0, 0.0, 1.0)), window)
+    _view(visualize(plot_data, :lines, color=RGBA(1.0, 0.0, 0.0, 1.0),model=_model), window)
     renderloop(window)
 end
 
